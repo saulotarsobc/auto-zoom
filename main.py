@@ -6,6 +6,7 @@ import os
 import logging
 import tkinter as tk
 from tkinter.scrolledtext import ScrolledText
+from threading import Thread
 
 # Função para obter o caminho da imagem embutida ou local
 def resource_path(relative_path):
@@ -46,6 +47,7 @@ class TextHandler(logging.Handler):
 handler = TextHandler()
 logging.getLogger().addHandler(handler)
 
+# Função que será chamada pela hotkey '0'
 def minha_funcao():
     try:
         logging.info("Iniciando função com clique em (222, 109)")
@@ -62,9 +64,19 @@ def minha_funcao():
     except Exception as e:
         logging.exception(f"Ocorreu um erro inesperado: {e}")
 
-logging.info("Aplicação iniciada. Pressione '0' para executar a função.")
-keyboard.add_hotkey('0', minha_funcao)  # Tecla '0' para executar
+# Função para executar `minha_funcao()` em uma thread separada
+def run_in_thread():
+    thread = Thread(target=minha_funcao)
+    thread.start()
 
-# Executa a janela e espera ESC para encerrar
-root.after(100, lambda: keyboard.wait('esc'))  # Aguarda ESC para fechar
+logging.info("Aplicação iniciada. Pressione '0' para executar a função.")
+keyboard.add_hotkey('0', run_in_thread)  # Executa a função na thread ao pressionar '0'
+
+# Verifica a tecla ESC em uma thread separada para não bloquear a interface
+def monitorar_esc():
+    keyboard.wait('esc')
+    root.quit()
+
+Thread(target=monitorar_esc).start()  # Inicia a monitorização do ESC em segundo plano
+
 root.mainloop()

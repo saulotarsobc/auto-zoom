@@ -1,4 +1,4 @@
 /build
 .venv
 /dist
-main.spec
+/*.spec
